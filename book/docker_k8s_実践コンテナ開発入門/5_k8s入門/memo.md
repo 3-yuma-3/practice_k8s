@@ -200,7 +200,9 @@ spec:
 - クラスタの外からのhttpリクエストをServiceにroutingするための `nginx_ingress_controller` をデプロイする
 
 1. `$ kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/nginx-0.16.2/deploy/mandatory.yaml`
+    - **正誤表を参照**
 2. `$ kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/nginx-0.16.2/deploy/provider/cloud-generic.yaml`
+    - **正誤表を参照**
 3. `$ kubectl -n ingress-nginx get service,pod`
     - `ingress-nginx` というNamespace上にService, Podが作成される
 
@@ -227,6 +229,32 @@ spec:
 2. `$ kubectl get ingress`
 3. `$ curl http://localhost -H 'Host: ch05.gihyo.local'`
     - backendに存在するecho Serviceから `Hello Docker!!` というレスポンスが返ってくる
+
+- ↑のingress.ymlじゃ動かなかったので修正
+  - [(参考) Kubernetesドキュメント / コンセプト / Service、負荷分散とネットワーキング / Ingress](https://kubernetes.io/ja/docs/concepts/services-networking/ingress/#ingress%E3%83%AA%E3%82%BD%E3%83%BC%E3%82%B9)
+  - それでもcurlが `curl: (7) Failed to connect to localhost port 80 after 0 ms: Connection refused` のままで謎
+
+```yml
+apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: echo
+spec:
+  rules:
+    - host: ch05.gihyo.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+#              serviceName: echo
+#              servicePort: 80
+              service:
+                name: echo
+                port:
+                  number: 80
+```
 
 ---
 
