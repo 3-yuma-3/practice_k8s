@@ -1,4 +1,13 @@
 # practice_k8s
+# 順番
+1. [install-kubectl](./doc/k8s/4_tasks/1_tools/4_install-kubectl/memo.md)
+2. [execute-minikube-local](./doc/k8s/2_setup/2_learning-environment/1_mi
+3. [hello-minikube](./doc/k8s/5_uttorials/1_hello-minikube/1_hello_minikube.md)nikube/2_execute_minikube_local.md)
+4. [docker_k8s_実践コンテナ開発入門](./book/docker_k8s_%E5%AE%9F%E8%B7%B5%E3%82%B3%E3%83%B3%E3%83%86%E3%83%8A%E9%96%8B%E7%99%BA%E5%85%A5%E9%96%80/)
+5. [helm](./doc/helm/)
+6. [container-runtimes](./doc/k8s/2_setup/3_production-environment/1_container-runtimes/memo.md)
+7. [install-kubeadm](./doc/k8s/2_setup/3_production-environment/2_tools/1_kubeadm/1_install_kubeadm.md)
+8. [create-cluster-kubeadm](./doc/k8s/2_setup/3_production-environment/2_tools/1_kubeadm/3_create-cluster-kubeadm.md)
 
 # doc
 ## k8s ドキュメント
