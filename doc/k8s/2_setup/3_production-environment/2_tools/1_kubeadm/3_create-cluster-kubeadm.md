@@ -80,3 +80,63 @@ kubeadm join 10.0.2.15:6443 --token w6tjej.bbbnua153mrynjsr \
 2. `$ mkdir -p $HOME/.kube`
 3. `$ sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config`
 4. `$ sudo chown $(id -u):$(id -g) $HOME/.kube/config`
+
+## [2019年版・Kubernetesクラスタ構築入門](https://knowledge.sakura.ad.jp/20955/)
+
+1. `$ kubectl get node` (まだstatusがnotReady)
+    ```bash
+      NAME         STATUS     ROLES           AGE     VERSION
+      ubuntu22-1   NotReady   control-plane   6m31s   v1.26.3
+    ```
+2. `$ wget https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml`
+3. `$ kubectl apply -f kube-flannel.yml`
+4. `$ kubectl get node` (statusがreadyになる)
+    ```bash
+      NAME         STATUS   ROLES           AGE     VERSION
+      ubuntu22-1   Ready    control-plane   8m16s   v1.26.3
+    ```
+5. 非マスターノード側で `$ kube init` 時に出力されたコマンドを実行
+  - [Invalid x509 certificate for kubernetes master (stackoverflow)](https://stackoverflow.com/questions/46360361/invalid-x509-certificate-for-kubernetes-master)
+    - `$ sudo kubeadm reset`
+    - `sudo kubeadm init --apiserver-advertise-address=192.168.1.154 --apiserver-cert-extra-sans=192.168.1.154`
+    - `$ sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config`
+    - 再度、非マスターノード側で `$ kube init` 時に出力されたコマンドを実行
+      ```
+        [preflight] Running pre-flight checks
+        [preflight] Reading configuration from the cluster...
+        [preflight] FYI: You can look at this config file with 'kubectl -n kube-system get cm kubeadm-config -o yaml'
+        [kubelet-start] Writing kubelet configuration to file "/var/lib/kubelet/config.yaml"
+        [kubelet-start] Writing kubelet environment file with flags to file "/var/lib/kubelet/kubeadm-flags.env"
+        [kubelet-start] Starting the kubelet
+        [kubelet-start] Waiting for the kubelet to perform the TLS Bootstrap...
+
+        This node has joined the cluster:
+        * Certificate signing request was sent to apiserver and a response was received.
+        * The Kubelet was informed of the new secure connection details.
+
+        Run 'kubectl get nodes' on the control-plane to see this node join the cluster.
+      ```
+6. `$ kubectl get node`
+    ```bash
+      NAME                        STATUS     ROLES           AGE   VERSION
+      asusu-ubuntu22-virtualbox   NotReady   <none>          26s   v1.26.3
+      ubuntu22-1                  Ready      control-plane   95s   v1.26.3
+    ```
+- **40分経っても非master nodeがreadyにならない**
+  - [Kubernetesのノードステータス"NotReady"を"Ready"へ](https://www.n-novice.com/entry/2018/03/18/030512#nodes%E3%82%B9%E3%83%86%E3%83%BC%E3%82%BF%E3%82%B9%E7%A2%BA%E8%AA%8D-1)
+    - `$ kubectl describe nodes`
+      ```
+        container runtime network not ready: NetworkReady=false reason:NetworkPluginNotReady message:Network plugin returns error: cni plugin not initialized
+      ```
+      - 非master nodeのCRIがnot readyでこけてた
+      - master nodeの方はエラーなし
+        ```
+          kubelet is posting ready status. AppArmor enabled
+        ```
+  - [kubeadmをセットアップしてみたが、いつも通りハマる](https://yunkt.hatenablog.com/entry/2018/08/13/200123)
+    - 非master nodeで `$ sudo systemctl status kubelet`
+      - master nodeで `kubectl describe nodes` を打った時のエラーと同じメッセージが出てた
+    - 非master nodeで `$ sudo vim /etc/containerd/config.toml` で `SystemdCgroup` を確認したところ、`true` になってたのでエラー原因謎
+
+
+- [Kubernetesドキュメント / タスク / クラスター内アプリケーションへのアクセス / Web UI (Dashboard)](https://kubernetes.io/ja/docs/tasks/access-application-cluster/web-ui-dashboard/) へ
